@@ -1,0 +1,22 @@
+{
+    "name": "Cqrs",
+    "version": "0.1.0",
+    "authors": [
+        "Rene Heindl <Rene.Heindl@goeg.at>"
+    ],
+    "description": "Implementation of the cqrs pattern for javascript",
+    "moduleType": [
+        "amd"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "jquery": "^2.1.3"
+    }
+}

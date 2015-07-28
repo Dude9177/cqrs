@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>CQRS Test</title>
+</head>
+
+<body>
+  <h1>CQRS Test</h1>
+  <script src="./bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="./src/cqrs.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+
+      console.log('define commands and events by convention')
+      cqrs.defineCommand('car_add', 'id', 'type', 'color', 'ps')
+      cqrs.defineEvent('car_added', 'id', 'type', 'color', 'ps')
+
+      console.log('define commands and events by named function')
+      function car_repaint(id, color) {
+          this.id = id
+          this.color = color
+      }
+
+      function car_repainted(id, color) {
+          this.id = id
+          this.color = color
+      }
+
+      cqrs.defineCommand(car_repaint)
+      cqrs.defineEvent(car_repainted)
+
+      console.log('define commands and events by anonymous function')
+      var car_pimp = function(id, ps) {
+        this.id = id
+        this.ps = ps
+      }
+
+      var car_pimped = function(id, ps) {
+        this.id = id
+        this.ps = ps
+      }
+
+      cqrs.defineCommand('car_pimp', car_pimp)
+      cqrs.defineEvent('car_pimped', car_pimped)
+
+      console.log('cqrs.commands', cqrs.commands)
+      console.log('cqrs.events', cqrs.events)
+
+      var Car = function() {
+        var self = this
+
+        self.id = 0
+        self.type = ''
+        self.color = ''
+        self.ps = 0
+
+        self.car_add = function*(c) {
+          yield new cqrs.events.car_added(c.id, c.type, c.color, c.ps)
+        }
+
+        self.car_added = function(e) {
+          console.log('car_added', e)
+        }
+
+        self.car_repaint = function* car_repaint(c) {
+          console.log('car_repaint', c)
+        }
+
+        self.car_repainted = function(e) {
+          console.log('car_repainted', e)
+        }
+
+        this.car_pimp = function*(c) {
+          console.log('car_pimp', c)
+        }
+
+        self.car_pimped = function(e) {
+          console.log('car_pimped', e)
+        }
+
+        cqrs.iHandleCommand('car_add', self.car_add, self)
+        cqrs.iHandleCommands(['car_repaint', 'car_pimp'], self)
+
+        cqrs.iApplyEvent('car_added', self.car_added, self)
+        cqrs.iApplyEvents(['car_repainted', 'car_pimped'], self)
+      }
+
+      var car = new Car()
+
+      var md = cqrs.createMessageDispatcher('main')
+      md.scan(car)
+
+      md.sendCommand(new cqrs.commands.car_add(1, 'BMW', 'red', 90))
+      /*console.log('commands defined', cqrs.commands)
+      console.log('events defined', cqrs.events)
+
+      console.log('create instance of groupGame')
+      var groupGame = new GroupGame()
+
+      var md = cqrs.createMessageDispatcher('hugo')
+      md.scan(groupGame)
+
+      md.sendCommand(new cqrs.commands.groupGame_play(1, 2, 2))*/
+    })
+  </script>
+</body>
+
+</html>
